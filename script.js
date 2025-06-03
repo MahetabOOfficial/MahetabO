@@ -94,44 +94,18 @@ class ParticleSystem {
   }
 }
 
-// Typing Effect for Subtitle
-function initTypingEffect() {
-  const subtitleElement = document.querySelector('.subtitle');
-  const text = 'Modular eCommerce Engine';
-  let charIndex = 0;
-  
-  // Clear existing text
-  subtitleElement.textContent = '';
-  subtitleElement.style.borderRight = '2px solid var(--primary-purple)';
-  
-  function typeCharacter() {
-    if (charIndex < text.length) {
-      subtitleElement.textContent += text.charAt(charIndex);
-      charIndex++;
-      // Random typing speed between 50-150ms for more natural feel
-      setTimeout(typeCharacter, Math.random() * 100 + 50);
-    } else {
-      // Start blinking cursor after typing is complete
-      setTimeout(() => {
-        subtitleElement.classList.add('typing-complete');
-      }, 500);
-    }
-  }
-  
-  // Start typing after a short delay
-  setTimeout(typeCharacter, 1000);
-}
+// Mouse interaction with particles
+let mouse = { x: 0, y: 0 };
+document.addEventListener('mousemove', (e) => {
+  mouse.x = e.clientX;
+  mouse.y = e.clientY;
+});
 
-// Enhanced Countdown Timer - Fixed the logic
+// Countdown Timer
 function updateCountdown() {
-  // Set target date to August 24, 2025
-  const targetDate = new Date('2025-08-24T00:00:00').getTime();
-  const now = new Date().getTime();
-  const distance = targetDate - now;
-  
-  console.log('Target Date:', new Date(targetDate));
-  console.log('Current Time:', new Date(now));
-  console.log('Distance:', distance);
+  const targetDate = new Date('2025-08-24T00:00:00');
+  const now = new Date();
+  const distance = targetDate.getTime() - now.getTime();
   
   if (distance > 0) {
     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
@@ -139,31 +113,15 @@ function updateCountdown() {
     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
     
-    // Update DOM elements with animation
-    updateTimeValue('days', days);
-    updateTimeValue('hours', hours);
-    updateTimeValue('minutes', minutes);
-    updateTimeValue('seconds', seconds);
+    document.getElementById('days').textContent = days.toString().padStart(2, '0');
+    document.getElementById('hours').textContent = hours.toString().padStart(2, '0');
+    document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+    document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
   } else {
-    // Countdown has ended
-    updateTimeValue('days', 0);
-    updateTimeValue('hours', 0);
-    updateTimeValue('minutes', 0);
-    updateTimeValue('seconds', 0);
-  }
-}
-
-function updateTimeValue(elementId, value) {
-  const element = document.getElementById(elementId);
-  if (element) {
-    const formattedValue = value.toString().padStart(2, '0');
-    if (element.textContent !== formattedValue) {
-      element.style.transform = 'scale(1.1)';
-      element.textContent = formattedValue;
-      setTimeout(() => {
-        element.style.transform = 'scale(1)';
-      }, 200);
-    }
+    document.getElementById('days').textContent = '00';
+    document.getElementById('hours').textContent = '00';
+    document.getElementById('minutes').textContent = '00';
+    document.getElementById('seconds').textContent = '00';
   }
 }
 
@@ -172,15 +130,11 @@ function showToast(message, type = 'success') {
   const toast = document.getElementById('toast');
   const toastMessage = document.getElementById('toastMessage');
   
-  if (!toast || !toastMessage) return;
-  
   toastMessage.textContent = message;
   toast.className = `toast show ${type}`;
   
-  // Add sparkle effect for success
-  if (type === 'success') {
-    createSparkles(toast);
-  }
+  // Add sparkle effect
+  createSparkles(toast);
   
   setTimeout(() => {
     toast.className = 'toast hidden';
@@ -197,7 +151,6 @@ function createSparkles(element) {
     sparkle.style.borderRadius = '50%';
     sparkle.style.pointerEvents = 'none';
     sparkle.style.animation = 'sparkle 1s ease-out forwards';
-    sparkle.style.zIndex = '1002';
     
     const rect = element.getBoundingClientRect();
     sparkle.style.left = (rect.left + Math.random() * rect.width) + 'px';
@@ -209,15 +162,24 @@ function createSparkles(element) {
   }
 }
 
+// Add sparkle animation CSS
+const sparkleCSS = `
+@keyframes sparkle {
+  0% { transform: scale(0) rotate(0deg); opacity: 1; }
+  50% { transform: scale(1) rotate(180deg); opacity: 1; }
+  100% { transform: scale(0) rotate(360deg); opacity: 0; }
+}
+`;
+const styleSheet = document.createElement('style');
+styleSheet.textContent = sparkleCSS;
+document.head.appendChild(styleSheet);
+
 // Enhanced Email submission form
 function handleEmailSubmission(event) {
   event.preventDefault();
   
   const emailInput = document.getElementById('emailInput');
   const subscribeButton = document.getElementById('subscribeButton');
-  
-  if (!emailInput || !subscribeButton) return;
-  
   const email = emailInput.value.trim();
   
   // Enhanced email validation
@@ -231,7 +193,6 @@ function handleEmailSubmission(event) {
   
   // Disable button and show loading state
   subscribeButton.disabled = true;
-  const originalText = subscribeButton.innerHTML;
   subscribeButton.innerHTML = '<span class="button-text">Processing...</span>';
   subscribeButton.classList.add('loading');
   
@@ -240,7 +201,7 @@ function handleEmailSubmission(event) {
     // Reset form
     emailInput.value = '';
     subscribeButton.disabled = false;
-    subscribeButton.innerHTML = originalText;
+    subscribeButton.innerHTML = '<span class="button-text">Notify Me at Launch</span>';
     subscribeButton.classList.remove('loading');
     
     // Show success message with confetti effect
@@ -272,6 +233,30 @@ function createConfetti() {
     setTimeout(() => confetti.remove(), 5000);
   }
 }
+
+// Add confetti animation CSS
+const confettiCSS = `
+@keyframes confetti-fall {
+  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+.loading {
+  animation: button-pulse 1s ease-in-out infinite;
+}
+@keyframes button-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+`;
+styleSheet.textContent += confettiCSS;
 
 // Smooth scrolling for anchor links
 function initSmoothScrolling() {
@@ -352,16 +337,9 @@ function initPageLoadAnimation() {
 
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 MahetabO landing page loading...');
-  
   // Initialize particle system
   const canvas = document.getElementById('particleCanvas');
-  if (canvas) {
-    new ParticleSystem(canvas);
-  }
-  
-  // Initialize typing effect
-  initTypingEffect();
+  new ParticleSystem(canvas);
   
   // Start countdown timer
   updateCountdown();
@@ -369,9 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Setup email form
   const emailForm = document.getElementById('emailForm');
-  if (emailForm) {
-    emailForm.addEventListener('submit', handleEmailSubmission);
-  }
+  emailForm.addEventListener('submit', handleEmailSubmission);
   
   // Initialize other features
   initSmoothScrolling();
@@ -414,62 +390,21 @@ document.addEventListener('DOMContentLoaded', function() {
       setTimeout(() => ripple.remove(), 600);
     });
   });
-  
-  console.log('✅ MahetabO landing page loaded successfully!');
 });
 
-// Add CSS animations via JavaScript
-const styleSheet = document.createElement('style');
-styleSheet.textContent = `
-@keyframes sparkle {
-  0% { transform: scale(0) rotate(0deg); opacity: 1; }
-  50% { transform: scale(1) rotate(180deg); opacity: 1; }
-  100% { transform: scale(0) rotate(360deg); opacity: 0; }
-}
-
-@keyframes confetti-fall {
-  0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-}
-
-.shake {
-  animation: shake 0.5s ease-in-out;
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
-}
-
-.loading {
-  animation: button-pulse 1s ease-in-out infinite;
-}
-
-@keyframes button-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
+// Add ripple animation CSS
+const rippleCSS = `
 @keyframes ripple {
   from { transform: scale(0); opacity: 0.6; }
   to { transform: scale(2); opacity: 0; }
 }
-
 @keyframes hover-glow {
   to { 
     box-shadow: 0 0 30px rgba(139, 92, 246, 0.6);
     transform: translateY(-5px) scale(1.05);
   }
 }
-
-.typing-complete {
-  animation: blink-caret 1s step-end infinite;
-}
-
-@keyframes blink-caret {
-  from, to { border-color: transparent; }
-  50% { border-color: var(--primary-purple); }
-}
 `;
-document.head.appendChild(styleSheet);
+styleSheet.textContent += rippleCSS;
+
+console.log('🚀 MahetabO landing page loaded with enhanced animations!');
